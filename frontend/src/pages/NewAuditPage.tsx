@@ -1,121 +1,137 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auditApi, CreateAuditPayload } from '../services/api';
+import { auditApi } from '../services/api';
 import { 
-  Globe, ShieldCheck, Sparkles, AlertCircle, ArrowRight, 
-  Loader2, Info, CheckCircle2, Building, Target, ShoppingBag 
+  Globe, Users, Sparkles, ArrowRight, AlertCircle, 
+  CheckCircle2, Plus, Trash2, Loader2, ShieldCheck, 
+  Zap, HelpCircle, Code
 } from 'lucide-react';
+
+interface SampleSite {
+  label: string;
+  primary: string;
+  competitors: string[];
+  industry: string;
+}
+
+const sampleSites: SampleSite[] = [
+  {
+    label: 'Stripe vs Adyen',
+    primary: 'https://stripe.com',
+    competitors: ['https://adyen.com'],
+    industry: 'Fintech & Payments',
+  },
+  {
+    label: 'GitHub vs GitLab',
+    primary: 'https://github.com',
+    competitors: ['https://about.gitlab.com'],
+    industry: 'Developer Tools',
+  },
+  {
+    label: 'Vercel vs Netlify',
+    primary: 'https://vercel.com',
+    competitors: ['https://netlify.com'],
+    industry: 'Cloud Infrastructure',
+  },
+];
 
 export const NewAuditPage: React.FC = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<CreateAuditPayload>({
-    primary_url: '',
-    competitor_urls: ['', ''],
-    industry: '',
-    target_audience: '',
-    main_service: '',
-    audit_objective: '',
-  });
+  const [primaryUrl, setPrimaryUrl] = useState('');
+  const [competitor1, setCompetitor1] = useState('');
+  const [competitor2, setCompetitor2] = useState('');
+  const [industry, setIndustry] = useState('');
+  
+  // Supported Audit Modules
+  const [runSeo, setRunSeo] = useState(true);
+  const [runUx, setRunUx] = useState(true);
+  const [runAi, setRunAi] = useState(true);
+  const [runVitals, setRunVitals] = useState(true);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState<string>('');
 
-  const sampleSites = [
-    { label: 'Savit Agency', primary: 'https://www.savit.in', comp1: 'https://www.rankontechnologies.com', industry: 'Digital Marketing & SEO Agency', service: 'Search Engine Optimization & Web Solutions' },
-    { label: 'FinTech (Stripe)', primary: 'https://stripe.com', comp1: 'https://squareup.com', industry: 'Financial Technology', service: 'Online Payment Gateway & Merchant API' },
-    { label: 'Cloud (Vercel)', primary: 'https://vercel.com', comp1: 'https://netlify.com', industry: 'Cloud & Developer Tooling', service: 'Frontend Deployment & Serverless Edge Infrastructure' },
-    { label: 'E-Commerce (Shopify)', primary: 'https://shopify.com', comp1: 'https://woocommerce.com', industry: 'E-Commerce Platforms', service: 'Digital Storefront & Multi-Channel Commerce' },
-    { label: 'React Dev', primary: 'https://react.dev', comp1: 'https://vuejs.org', industry: 'Software & Open Source', service: 'Frontend JavaScript UI Framework' },
-  ];
-
-  const handleApplySample = (sample: typeof sampleSites[0]) => {
-    setFormData((prev) => ({
-      ...prev,
-      primary_url: sample.primary,
-      competitor_urls: [sample.comp1, ''],
-      industry: sample.industry,
-      main_service: sample.service,
-      target_audience: 'Business owners, engineering leaders, and marketing teams',
-      audit_objective: 'Evaluate technical SEO architecture, heading progression, and competitive differentiators.',
-    }));
-    setErrors({});
-  };
-
-  const validateForm = (): boolean => {
+  const validate = (): boolean => {
     const errs: Record<string, string> = {};
 
-    if (!formData.primary_url.trim()) {
+    if (!primaryUrl.trim()) {
       errs.primary_url = 'Primary website URL is required.';
     } else {
-      const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/i;
-      if (!urlPattern.test(formData.primary_url.trim())) {
-        errs.primary_url = 'Please enter a valid website domain or URL (e.g. example.com or https://example.com).';
+      try {
+        const parsed = new URL(primaryUrl.startsWith('http') ? primaryUrl : `https://${primaryUrl}`);
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+          errs.primary_url = 'URL must begin with http:// or https://';
+        }
+      } catch {
+        errs.primary_url = 'Please enter a valid website URL.';
       }
     }
 
-    const cleanPrimaryHost = formData.primary_url.replace(/^(https?:\/\/)?(www\.)?/i, '').split('/')[0].toLowerCase();
-    const compUrls = formData.competitor_urls || [];
-    const seenHosts: string[] = [];
-
-    compUrls.forEach((comp, idx) => {
-      if (comp && comp.trim()) {
-        const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/i;
-        if (!urlPattern.test(comp.trim())) {
-          errs[`competitor_${idx}`] = 'Invalid competitor URL format.';
-        }
-
-        const compHost = comp.replace(/^(https?:\/\/)?(www\.)?/i, '').split('/')[0].toLowerCase();
-        if (compHost === cleanPrimaryHost && cleanPrimaryHost !== '') {
-          errs[`competitor_${idx}`] = 'Competitor cannot point to the same domain as the primary website.';
-        }
-
-        if (seenHosts.includes(compHost)) {
-          errs[`competitor_${idx}`] = 'Duplicate competitor domain entered.';
-        }
-        seenHosts.push(compHost);
+    if (competitor1.trim()) {
+      try {
+        new URL(competitor1.startsWith('http') ? competitor1 : `https://${competitor1}`);
+      } catch {
+        errs.competitor1 = 'Invalid competitor URL.';
       }
-    });
+    }
+
+    if (competitor2.trim()) {
+      try {
+        new URL(competitor2.startsWith('http') ? competitor2 : `https://${competitor2}`);
+      } catch {
+        errs.competitor2 = 'Invalid competitor URL.';
+      }
+    }
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
+  const handleApplySample = (sample: SampleSite) => {
+    setPrimaryUrl(sample.primary);
+    setCompetitor1(sample.competitors[0] || '');
+    setCompetitor2(sample.competitors[1] || '');
+    setIndustry(sample.industry);
+    setErrors({});
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validate()) return;
 
     setIsSubmitting(true);
-    setCurrentStep('Executing SSRF security verification on destination URLs...');
+    setErrors({});
+
+    const competitors = [competitor1, competitor2]
+      .map(c => c.trim())
+      .filter(Boolean);
 
     try {
-      setTimeout(() => setCurrentStep('Fetching website HTML and validating redirect hops...'), 1200);
-      setTimeout(() => setCurrentStep('Extracting metadata, headings, CTAs & Schema structures...'), 2400);
-      setTimeout(() => setCurrentStep('Running 20+ deterministic SEO & UX rule engines...'), 3800);
-      setTimeout(() => setCurrentStep('Synthesizing evidence-backed AI recommendations...'), 5200);
+      setCurrentStep('Validating website domains & checking SSRF firewall rules...');
+      await new Promise(r => setTimeout(r, 600));
 
-      const activeCompetitors = (formData.competitor_urls || []).filter((u) => u && u.trim() !== '');
+      setCurrentStep('Fetching HTML & evaluating deterministic SEO & UX rule engines...');
+      const response = await auditApi.createAudit({
+        primary_url: primaryUrl.trim(),
+        competitor_urls: competitors,
+        industry: industry.trim() || undefined,
+      });
 
-      const payload: CreateAuditPayload = {
-        primary_url: formData.primary_url.trim(),
-        competitor_urls: activeCompetitors,
-        industry: formData.industry?.trim() || undefined,
-        target_audience: formData.target_audience?.trim() || undefined,
-        main_service: formData.main_service?.trim() || undefined,
-        audit_objective: formData.audit_objective?.trim() || undefined,
-      };
+      setCurrentStep('Synthesizing evidence-backed AI recommendations...');
+      await new Promise(r => setTimeout(r, 400));
 
-      const result = await auditApi.createAudit(payload);
-      navigate(`/audits/${result.id}`);
+      // Successfully launched, route to report
+      navigate(`/audits/${response.id}`);
     } catch (err: any) {
       setIsSubmitting(false);
-      const serverErrors = err.response?.data?.errors;
-      if (serverErrors) {
-        const formatted: Record<string, string> = {};
-        Object.keys(serverErrors).forEach((key) => {
-          formatted[key] = serverErrors[key][0];
-        });
-        setErrors(formatted);
+      setCurrentStep('');
+      if (err.response?.data?.errors) {
+        const apiErrors: Record<string, string> = {};
+        for (const [k, v] of Object.entries(err.response.data.errors)) {
+          apiErrors[k] = Array.isArray(v) ? (v[0] as string) : String(v);
+        }
+        setErrors(apiErrors);
       } else {
         setErrors({ general: err.response?.data?.message || 'An error occurred while launching the audit.' });
       }
@@ -123,19 +139,19 @@ export const NewAuditPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-16">
-      {/* Page Header */}
+    <div className="max-w-3xl mx-auto space-y-8 pb-16">
+      {/* ── Page Header ── */}
       <div>
-        <h2 className="text-xl font-black text-slate-900 tracking-tight">Configure New Audit</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Perform deterministic SEO and HTML-based UX diagnostics, compare competitors, and generate evidence-backed insights.
+        <h1 className="text-xl font-bold text-[#151827] tracking-tight">Run a Website Audit</h1>
+        <p className="text-xs text-[#667085] mt-1 leading-relaxed">
+          Analyze SEO, UX, content quality, and competitor performance in one place using deterministic DOM extraction and LLM insights.
         </p>
       </div>
 
-      {/* Quick Example Fill Pills */}
-      <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs font-semibold text-indigo-900">
-          <Sparkles className="w-4 h-4 text-indigo-600" />
+      {/* ── Quick Example Sites Strip ── */}
+      <div className="saas-card p-4 bg-white flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#151827]">
+          <Sparkles className="w-4 h-4 text-accent-500" />
           <span>Quick Example Sites:</span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -143,18 +159,19 @@ export const NewAuditPage: React.FC = () => {
             <button
               key={sample.label}
               type="button"
+              disabled={isSubmitting}
               onClick={() => handleApplySample(sample)}
-              className="px-3 py-1 bg-white hover:bg-indigo-600 hover:text-white text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 hover:border-indigo-600 shadow-2xs transition-all"
+              className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-[#F7F8FC] border border-[#E6E8EF] hover:border-accent-300 hover:text-accent-700 rounded-lg transition-colors"
             >
-              {sample.label} vs Competitor
+              {sample.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* General Form Error Banner */}
+      {/* ── Error Banner ── */}
       {errors.general && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3 text-rose-800 text-xs">
+        <div className="p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs flex items-start gap-2.5">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
           <div>
             <strong className="block font-bold">Audit Request Error:</strong>
@@ -163,191 +180,198 @@ export const NewAuditPage: React.FC = () => {
         </div>
       )}
 
-      {/* Audit Form */}
+      {/* ── Main Form ── */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Section 1: Target Domains */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-5">
-          <div className="border-b border-slate-100 pb-3">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Globe className="w-4 h-4 text-indigo-600" />
-              <span>Target Website & Competitors</span>
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Enter the primary domain to audit and up to two competitors to benchmark against.
-            </p>
+        {/* Step 1: Target Primary Website */}
+        <div className="saas-card p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-[#E6E8EF] pb-3">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-accent-500" />
+              <h2 className="text-sm font-bold text-[#151827]">Primary Website</h2>
+            </div>
+            <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
+              Required
+            </span>
           </div>
 
-          <div className="space-y-4">
-            {/* Primary URL */}
+          <div>
+            <label htmlFor="primary-url" className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Website URL to Audit
+            </label>
+            <input
+              id="primary-url"
+              type="text"
+              value={primaryUrl}
+              onChange={(e) => setPrimaryUrl(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="https://example.com"
+              className={`w-full px-3.5 py-2.5 bg-white border rounded-lg text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all ${
+                errors.primary_url ? 'border-rose-300 bg-rose-50/20' : 'border-[#E6E8EF]'
+              }`}
+            />
+            {errors.primary_url ? (
+              <p className="text-xs text-rose-600 mt-1 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" /> {errors.primary_url}
+              </p>
+            ) : (
+              <p className="text-[11px] text-[#667085] mt-1.5">
+                Target homepage or specific landing page. The engine will inspect live DOM, headings, viewport, and metadata.
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="industry-select" className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Industry or Category <span className="text-slate-400 font-normal">(Optional context)</span>
+            </label>
+            <input
+              id="industry-select"
+              type="text"
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="e.g. SaaS, E-Commerce, Developer Tools"
+              className="w-full px-3.5 py-2 bg-white border border-[#E6E8EF] rounded-lg text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500"
+            />
+          </div>
+        </div>
+
+        {/* Step 2: Competitor Benchmarks */}
+        <div className="saas-card p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-[#E6E8EF] pb-3">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-emerald-600" />
+              <h2 className="text-sm font-bold text-[#151827]">Competitor Benchmarks</h2>
+            </div>
+            <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+              Optional (1–2 Sites)
+            </span>
+          </div>
+
+          <p className="text-xs text-[#667085] leading-relaxed">
+            Add 1 or 2 competitor URLs to generate side-by-side matrices, keyword density gaps, and comparative speed scores.
+          </p>
+
+          <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                Primary Website URL <span className="text-rose-500">*</span>
+              <label htmlFor="comp1" className="block text-xs font-semibold text-slate-700 mb-1">
+                Competitor 1 URL
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="https://example.com"
-                  value={formData.primary_url}
-                  onChange={(e) => setFormData({ ...formData, primary_url: e.target.value })}
-                  disabled={isSubmitting}
-                  className={`w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 transition-all ${
-                    errors.primary_url ? 'border-rose-300 bg-rose-50/30' : 'border-slate-300 bg-white'
-                  }`}
-                />
-              </div>
-              {errors.primary_url && (
-                <p className="text-[11px] text-rose-600 font-semibold mt-1">{errors.primary_url}</p>
+              <input
+                id="comp1"
+                type="text"
+                value={competitor1}
+                onChange={(e) => setCompetitor1(e.target.value)}
+                disabled={isSubmitting}
+                placeholder="https://competitor-one.com"
+                className={`w-full px-3.5 py-2.5 bg-white border rounded-lg text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 ${
+                  errors.competitor1 ? 'border-rose-300' : 'border-[#E6E8EF]'
+                }`}
+              />
+              {errors.competitor1 && (
+                <p className="text-xs text-rose-600 mt-1">{errors.competitor1}</p>
               )}
             </div>
 
-            {/* Competitor URL 1 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div>
+              <label htmlFor="comp2" className="block text-xs font-semibold text-slate-700 mb-1">
+                Competitor 2 URL
+              </label>
+              <input
+                id="comp2"
+                type="text"
+                value={competitor2}
+                onChange={(e) => setCompetitor2(e.target.value)}
+                disabled={isSubmitting}
+                placeholder="https://competitor-two.com"
+                className={`w-full px-3.5 py-2.5 bg-white border rounded-lg text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 ${
+                  errors.competitor2 ? 'border-rose-300' : 'border-[#E6E8EF]'
+                }`}
+              />
+              {errors.competitor2 && (
+                <p className="text-xs text-rose-600 mt-1">{errors.competitor2}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Step 3: Active Audit Modules */}
+        <div className="saas-card p-6 space-y-4">
+          <div className="border-b border-[#E6E8EF] pb-3">
+            <h2 className="text-sm font-bold text-[#151827]">Audit Engine Modules</h2>
+            <p className="text-xs text-[#667085] mt-0.5">Toggle rules and analysis packages executed during this audit</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <label className="flex items-start gap-3 p-3 rounded-lg border border-[#E6E8EF] hover:bg-[#F7F8FC] cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                checked={runSeo}
+                onChange={e => setRunSeo(e.target.checked)}
+                className="mt-0.5 rounded text-accent-500 focus:ring-accent-500"
+              />
               <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                  Competitor URL 1 <span className="text-slate-400 font-normal">(Optional)</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="https://competitor1.com"
-                  value={formData.competitor_urls?.[0] || ''}
-                  onChange={(e) => {
-                    const comps = [...(formData.competitor_urls || ['', ''])];
-                    comps[0] = e.target.value;
-                    setFormData({ ...formData, competitor_urls: comps });
-                  }}
-                  disabled={isSubmitting}
-                  className={`w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 transition-all ${
-                    errors.competitor_0 ? 'border-rose-300 bg-rose-50/30' : 'border-slate-300 bg-white'
-                  }`}
-                />
-                {errors.competitor_0 && (
-                  <p className="text-[11px] text-rose-600 font-semibold mt-1">{errors.competitor_0}</p>
-                )}
+                <p className="text-xs font-bold text-slate-900">Deterministic SEO Rules</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Checks title, headings, canonicals, robots, meta tags.</p>
               </div>
+            </label>
 
-              {/* Competitor URL 2 */}
+            <label className="flex items-start gap-3 p-3 rounded-lg border border-[#E6E8EF] hover:bg-[#F7F8FC] cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                checked={runUx}
+                onChange={e => setRunUx(e.target.checked)}
+                className="mt-0.5 rounded text-accent-500 focus:ring-accent-500"
+              />
               <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                  Competitor URL 2 <span className="text-slate-400 font-normal">(Optional)</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="https://competitor2.com"
-                  value={formData.competitor_urls?.[1] || ''}
-                  onChange={(e) => {
-                    const comps = [...(formData.competitor_urls || ['', ''])];
-                    comps[1] = e.target.value;
-                    setFormData({ ...formData, competitor_urls: comps });
-                  }}
-                  disabled={isSubmitting}
-                  className={`w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 transition-all ${
-                    errors.competitor_1 ? 'border-rose-300 bg-rose-50/30' : 'border-slate-300 bg-white'
-                  }`}
-                />
-                {errors.competitor_1 && (
-                  <p className="text-[11px] text-rose-600 font-semibold mt-1">{errors.competitor_1}</p>
-                )}
+                <p className="text-xs font-bold text-slate-900">HTML-Based UX Diagnostics</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Mobile viewport, CTA counts, landmarks, accessibility.</p>
               </div>
-            </div>
+            </label>
+
+            <label className="flex items-start gap-3 p-3 rounded-lg border border-[#E6E8EF] hover:bg-[#F7F8FC] cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                checked={runVitals}
+                onChange={e => setRunVitals(e.target.checked)}
+                className="mt-0.5 rounded text-accent-500 focus:ring-accent-500"
+              />
+              <div>
+                <p className="text-xs font-bold text-slate-900">Synthetic Web Vitals Lab</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">LCP, INP, CLS & server TTFB diagnostic estimation.</p>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 p-3 rounded-lg border border-[#E6E8EF] hover:bg-[#F7F8FC] cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                checked={runAi}
+                onChange={e => setRunAi(e.target.checked)}
+                className="mt-0.5 rounded text-accent-500 focus:ring-accent-500"
+              />
+              <div>
+                <p className="text-xs font-bold text-slate-900">AI Recommendation Engine</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Evidence-backed fixes via LLM (Gemini/Groq or fallback).</p>
+              </div>
+            </label>
           </div>
         </div>
 
-        {/* Section 2: Business Context */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-5">
-          <div className="border-b border-slate-100 pb-3">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Building className="w-4 h-4 text-indigo-600" />
-              <span>Business Context & Audit Focus</span>
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Providing business context helps the AI synthesize highly tailored and industry-relevant action steps.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">Industry / Vertical</label>
-              <input
-                type="text"
-                placeholder="e.g. B2B SaaS, E-Commerce, Healthcare"
-                value={formData.industry || ''}
-                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                disabled={isSubmitting}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">Target Audience</label>
-              <input
-                type="text"
-                placeholder="e.g. Enterprise CTOs, Small Business Owners"
-                value={formData.target_audience || ''}
-                onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
-                disabled={isSubmitting}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">Main Product or Service</label>
-              <input
-                type="text"
-                placeholder="e.g. AI Workflow Automation Software"
-                value={formData.main_service || ''}
-                onChange={(e) => setFormData({ ...formData, main_service: e.target.value })}
-                disabled={isSubmitting}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">Audit Objective</label>
-              <input
-                type="text"
-                placeholder="e.g. Increase organic search leads and improve CTA clarity"
-                value={formData.audit_objective || ''}
-                onChange={(e) => setFormData({ ...formData, audit_objective: e.target.value })}
-                disabled={isSubmitting}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Security & Fetching Notice */}
-        <div className="bg-slate-100/80 border border-slate-200 rounded-2xl p-4 text-xs text-slate-600 space-y-2">
-          <div className="flex items-center gap-2 text-slate-900 font-bold">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>Secure Web Fetching Notice & Limitations</span>
-          </div>
-          <p className="leading-relaxed">
-            • <strong>SSRF Security:</strong> Requests to private IPs, localhost, AWS/GCP cloud metadata (169.254.169.254), and loopback ranges are strictly blocked at the DNS and socket layer.
-          </p>
-          <p className="leading-relaxed">
-            • <strong>Static HTML Inspection:</strong> Analysis extracts server-rendered HTML. Single Page Applications (SPAs) relying exclusively on client-side JavaScript rendering may have limited extractable visible text.
-          </p>
-        </div>
-
-        {/* Live Processing Animation / Submit Button */}
+        {/* ── Submission State ── */}
         {isSubmitting ? (
-          <div className="bg-white border border-indigo-200 rounded-2xl p-6 text-center space-y-4 shadow-sm animate-pulse">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
-              <Loader2 className="w-6 h-6 animate-spin" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">Audit in Progress...</h3>
-              <p className="text-xs text-indigo-600 font-semibold mt-1">{currentStep}</p>
-            </div>
-            <div className="w-full max-w-md bg-slate-100 h-1.5 rounded-full mx-auto overflow-hidden">
-              <div className="bg-indigo-600 h-full rounded-full animate-pulse w-3/4" />
+          <div className="saas-card p-6 text-center space-y-3 border-accent-200 bg-accent-50/20">
+            <Loader2 className="w-6 h-6 text-accent-500 animate-spin mx-auto" />
+            <h3 className="text-sm font-bold text-slate-900">Audit in Progress</h3>
+            <p className="text-xs text-accent-600 font-semibold">{currentStep}</p>
+            <div className="w-full max-w-sm bg-slate-200 h-1.5 rounded-full mx-auto overflow-hidden">
+              <div className="bg-accent-500 h-full rounded-full animate-pulse w-3/4" />
             </div>
           </div>
         ) : (
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-md shadow-indigo-600/20 hover:shadow-lg transition-all"
+              className="btn-primary text-sm !px-6 !py-3"
             >
               <span>Launch SiteScope Audit</span>
               <ArrowRight className="w-4 h-4" />

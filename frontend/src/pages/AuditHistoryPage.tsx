@@ -103,7 +103,7 @@ export const AuditHistoryPage: React.FC = () => {
               placeholder="Search domain, URL, industry..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 w-56 sm:w-64"
+              className="pl-8 pr-3 py-1.5 text-xs bg-white border border-[#E6E8EF] rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 w-56 sm:w-64 text-slate-900 placeholder-slate-400"
             />
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
           </form>
@@ -114,7 +114,7 @@ export const AuditHistoryPage: React.FC = () => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 text-slate-700 font-medium"
+            className="px-3 py-1.5 text-xs bg-white border border-[#E6E8EF] rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500/20 text-slate-700 font-medium"
           >
             <option value="">All Statuses</option>
             <option value="completed">Completed</option>
@@ -126,7 +126,7 @@ export const AuditHistoryPage: React.FC = () => {
           <button
             type="button"
             onClick={() => triggerNow()}
-            className="p-2 text-slate-500 hover:text-slate-800 bg-white border border-slate-200 rounded-xl"
+            className="p-1.5 text-slate-500 hover:text-slate-800 bg-white border border-[#E6E8EF] rounded-lg transition-colors"
             title="Refresh history"
           >
             <RefreshCw className="w-3.5 h-3.5" />

@@ -7,36 +7,71 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
+        // Linear/Vercel/Stripe 2026 SaaS Neutral Slate & Surface Palette
+        surface: {
+          subtle: '#F7F8FC',
+          DEFAULT: '#FFFFFF',
+          muted: '#F1F3F9',
+          border: '#E6E8EF',
+          hover: '#F8F9FD',
         },
-        navy: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#020617',
-        }
+        text: {
+          primary: '#151827',
+          secondary: '#667085',
+          muted: '#98A2B3',
+        },
+        // Refined 2026 Violet Accent Palette
+        accent: {
+          50: '#F4F2FF',
+          100: '#EBE7FE',
+          200: '#D8D0FD',
+          300: '#B8A8FB',
+          400: '#947BF8',
+          500: '#6D4AFF',
+          600: '#5936E8',
+          700: '#4727CB',
+          800: '#3A20A7',
+          900: '#2A1778',
+        },
+        // Semantic Indicators
+        status: {
+          success: '#12B76A',
+          'success-bg': '#ECFDF3',
+          'success-border': '#A6F4C5',
+          warning: '#F79009',
+          'warning-bg': '#FFFAEB',
+          'warning-border': '#FEDF89',
+          error: '#F04438',
+          'error-bg': '#FEF3F2',
+          'error-border': '#FECDCA',
+        },
+        brand: {
+          50: '#F4F2FF',
+          100: '#EBE7FE',
+          200: '#D8D0FD',
+          300: '#B8A8FB',
+          400: '#947BF8',
+          500: '#6D4AFF',
+          600: '#5936E8',
+          700: '#4727CB',
+          800: '#3A20A7',
+          900: '#2A1778',
+          950: '#140A3C',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
+      boxShadow: {
+        'subtle': '0 1px 2px rgba(16, 24, 40, 0.04)',
+        'card': '0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04)',
+        'card-hover': '0 4px 12px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04)',
+        'dropdown': '0 10px 30px -4px rgba(16, 24, 40, 0.12), 0 4px 8px -2px rgba(16, 24, 40, 0.06)',
+      },
+      borderRadius: {
+        'xl': '12px',
+        '2xl': '16px',
+      }
     },
   },
   plugins: [],

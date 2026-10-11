@@ -41,20 +41,20 @@ export const SettingsPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-16">
+    <div className="max-w-4xl mx-auto space-y-6 pb-16">
       <div>
-        <h2 className="text-xl font-black text-slate-900 tracking-tight">System & AI Configuration</h2>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-xl font-bold text-[#151827] tracking-tight">System & AI Configuration</h1>
+        <p className="text-xs text-[#667085] mt-1">
           Diagnostics, safe AI provider status, and security architecture telemetry.
         </p>
       </div>
 
       {/* AI Provider Status Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-5">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div className="saas-card p-6 space-y-5">
+        <div className="flex items-center justify-between border-b border-[#E6E8EF] pb-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-sm font-bold text-slate-900">AI Engine Integration Status</h3>
+            <Sparkles className="w-4 h-4 text-accent-500" />
+            <h2 className="text-sm font-bold text-[#151827]">AI Engine Integration Status</h2>
           </div>
           {aiStatus?.is_configured ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">

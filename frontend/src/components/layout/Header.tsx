@@ -23,8 +23,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobile }) => {
       '/serp-studio': 'SERP & Meta Studio',
       '/settings': 'Settings',
     };
-    const label = pathMap[location.pathname] || 'Report';
-    return label;
+    if (location.pathname.startsWith('/audits/')) return 'Audit Report';
+    return pathMap[location.pathname] || 'Dashboard';
   };
 
   const currentPage = getBreadcrumb();
@@ -48,76 +48,73 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobile }) => {
         setTimeout(() => setCopied(false), 2000);
       }
     } catch {
-      // User cancelled or clipboard permission denied
+      // User cancelled
     }
   };
 
   return (
     <header 
-      className="h-14 bg-white border-b border-gray-100 px-5 flex items-center gap-4 sticky top-0 z-20"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+      className="h-14 bg-white border-b border-[#E6E8EF] px-4 sm:px-6 flex items-center justify-between gap-4 sticky top-0 z-20 shrink-0"
     >
-      {/* Mobile trigger */}
-      <button
-        type="button"
-        onClick={onOpenMobile}
-        className="lg:hidden p-1.5 text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-100"
-        aria-label="Open navigation menu"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+      {/* Left: Mobile trigger & Breadcrumbs */}
+      <div className="flex items-center gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={onOpenMobile}
+          className="lg:hidden p-1.5 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
 
-      {/* Breadcrumb */}
-      <nav className="hidden sm:flex items-center gap-1.5 text-sm text-gray-400 min-w-0">
-        <Link to="/" className="hover:text-gray-600 transition-colors">
-          <Home className="w-3.5 h-3.5" />
-        </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-300" />
-        <span className="text-gray-400">Dashboard</span>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-300" />
-        <span className="text-gray-700 font-medium truncate">{currentPage}</span>
-      </nav>
+        <nav aria-label="Breadcrumbs" className="hidden sm:flex items-center gap-1.5 text-xs text-[#667085] min-w-0">
+          <Link to="/" className="hover:text-slate-900 transition-colors flex items-center gap-1">
+            <Home className="w-3.5 h-3.5 text-slate-400" />
+            <span className="hidden md:inline font-medium">Dashboard</span>
+          </Link>
+          <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" />
+          <span className="text-slate-900 font-semibold truncate">{currentPage}</span>
+        </nav>
+      </div>
 
-      {/* Search Bar - functional input */}
-      <div className="flex-1 max-w-xs mx-auto hidden md:block">
+      {/* Center: Command / Search Bar */}
+      <div className="flex-1 max-w-sm mx-auto hidden md:block">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleSearchKeyDown}
-            placeholder="Search domain & press Enter..."
-            className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-300 transition-all"
+            placeholder="Search domain or keyword (press Enter)..."
+            className="w-full pl-8 pr-3 py-1.5 bg-[#F7F8FC] border border-[#E6E8EF] rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all"
           />
         </div>
       </div>
 
-      {/* Right actions */}
-      <div className="ml-auto flex items-center gap-2">
-        {/* Share Button with feedback */}
+      {/* Right: Quick actions and Profile */}
+      <div className="flex items-center gap-2.5">
         <button
           type="button"
           onClick={handleShare}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors active:scale-95"
-          title="Share or copy current link"
+          className="btn-secondary !py-1.5 !px-2.5 text-xs font-medium"
+          title="Share active report or page link"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-          <span>{copied ? 'Link Copied!' : 'Share'}</span>
+          {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-slate-500" />}
+          <span className="hidden sm:inline">{copied ? 'Copied' : 'Share'}</span>
         </button>
 
-        {/* User profile linked to settings */}
         <Link
           to="/settings"
-          className="flex items-center gap-2 pl-2 border-l border-gray-100 hover:opacity-80 transition-opacity"
-          title="Go to settings"
+          className="flex items-center gap-2 pl-2 border-l border-[#E6E8EF] hover:opacity-85 transition-opacity"
+          title="Account settings"
         >
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+          <div className="w-7 h-7 rounded-full bg-accent-50 text-accent-600 border border-accent-200 flex items-center justify-center text-xs font-bold">
             K
           </div>
-          <div className="hidden sm:block text-left">
-            <p className="text-xs font-semibold text-gray-800 leading-none">Kevine Harry</p>
-            <p className="text-[10px] text-gray-400 leading-none mt-0.5">Admin</p>
+          <div className="hidden lg:block text-left">
+            <p className="text-xs font-semibold text-slate-900 leading-none">Kevine H.</p>
+            <p className="text-[10px] text-slate-400 leading-none mt-0.5">Admin</p>
           </div>
         </Link>
       </div>

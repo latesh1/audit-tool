@@ -218,7 +218,7 @@ export const AuditResultPage: React.FC = () => {
       </div>
 
       {/* Sub-Navigation Tabs */}
-      <div className="flex items-center gap-1 border-b border-slate-200 overflow-x-auto pb-px">
+      <div className="flex items-center gap-1.5 border-b border-[#E6E8EF] overflow-x-auto pb-px">
         {[
           { key: 'overview', label: 'Overview & Summary', icon: BarChart3 },
           { key: 'seo', label: `SEO Audit (${seoIssues.length})`, icon: ShieldCheck },
@@ -235,13 +235,13 @@ export const AuditResultPage: React.FC = () => {
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key as any)}
-            className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
               activeTab === tab.key
-                ? 'border-indigo-600 text-indigo-600 bg-indigo-50/40 rounded-t-lg'
+                ? 'border-accent-500 text-accent-600 bg-accent-50/50 rounded-t-lg font-bold'
                 : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
             }`}
           >
-            <tab.icon className="w-4 h-4" />
+            <tab.icon className={`w-3.5 h-3.5 ${activeTab === tab.key ? 'text-accent-500' : 'text-slate-400'}`} />
             <span>{tab.label}</span>
           </button>
         ))}
