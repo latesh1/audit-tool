@@ -1,5 +1,8 @@
 # SiteScope AI - Website & Competitor Audit Platform
 
+> 🌐 **Live Demo**: [http://98.91.229.53/](http://98.91.229.53/)  
+> 📦 **GitHub Repository**: [https://github.com/latesh1/audit-tool](https://github.com/latesh1/audit-tool)
+
 A full-stack, enterprise-grade website auditing and competitor benchmark platform built with **Laravel 12** and **React 19 + TypeScript + Vite + Tailwind CSS**.
 
 SiteScope AI crawls live website HTML/metadata, runs strict deterministic SEO & UX rule engines, benchmarks against 1–2 competitors, and synthesizes evidence-backed insights using LLMs (Google Gemini, Groq, or deterministic zero-API-key fallback).
